@@ -1,0 +1,9 @@
+{
+    "tokenizer": "BAAI/bge-large-en-v1.5",
+    "embedding_model": "BAAI/bge-large-en-v1.5",
+    "top_k": 5,
+    "chunk_size": 512,
+    "supported_extensions": [".txt"],
+    "para_separator": "\n\n",
+    "separator": " "
+}
