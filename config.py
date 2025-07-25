@@ -24,3 +24,6 @@ config = Config.from_json()
 config.tokenizer = AutoTokenizer.from_pretrained(config.tokenizer)
 config.embedding_model = AutoModel.from_pretrained(config.embedding_model)
 config.embedding_model.eval()
+
+
+# add logger

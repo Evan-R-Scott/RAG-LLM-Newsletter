@@ -28,7 +28,8 @@ def retrieve_text(
         doc_id, chunk_id, _ = match
         try:
             related_text = document_data[doc_id][chunk_id]["text"]
-            content.append(related_text)
+            if related_text and related_text.strip():
+                content.append(related_text)
         except (KeyError) as e:
             print(f"Could not find text for {doc_id}/{chunk_id}: {e}")
             continue
