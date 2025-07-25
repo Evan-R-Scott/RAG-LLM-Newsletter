@@ -5,6 +5,7 @@ from transformers import AutoTokenizer, AutoModel
 
 @dataclass
 class Config:
+    document_directory: str
     tokenizer: str
     embedding_model: str
     top_k: int
