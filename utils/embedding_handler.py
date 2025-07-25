@@ -47,7 +47,7 @@ def map_embeddings(
                 return_tensors="pt")
             
             with torch.no_grad():
-                embeddings = config.model(**encoded_input).last_hidden_state.mean(dim=1).squeeze().tolist()
+                embeddings = config.embedding_model(**encoded_input).last_hidden_state.mean(dim=1).squeeze().tolist()
 
             mapped_embeddings[chunk_id] = embeddings
         mapped_document_db[doc_id] = mapped_embeddings
@@ -71,7 +71,7 @@ def compute_embeddings(query: str) -> List[float]:
         return_tensors="pt")
     
     with torch.no_grad():
-        query_embeddings = config.model(**query_inputs).last_hidden_state.mean(dim=1).squeeze()
+        query_embeddings = config.embedding_model(**query_inputs).last_hidden_state.mean(dim=1).squeeze()
         query_embeddings = query_embeddings.tolist()
-        
+
     return query_embeddings

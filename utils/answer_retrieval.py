@@ -1,5 +1,5 @@
 import numpy as np
-from embedding_handler import compute_embeddings
+from utils.embedding_handler import compute_embeddings
 from config import config
 from typing import Dict, List, Tuple
 
@@ -10,7 +10,7 @@ def retrieve_top_k_scores(
     """
     
     """
-    query_embeddings = np.array(compute_embeddings(query, config.tokenizer, config.embedding_model))
+    query_embeddings = np.array(compute_embeddings(query))
     query_embeddings = normalize_vector(query_embeddings)
 
     scores = []
@@ -21,7 +21,7 @@ def retrieve_top_k_scores(
             chunk_embeddings = np.array(chunk_embeddings)
             chunk_embeddings = normalize_vector(chunk_embeddings)
             cosine_similarity_score = np.dot(query_embeddings, chunk_embeddings)
-            scores.append(doc_id, chunk_id, cosine_similarity_score)
+            scores.append((doc_id, chunk_id, cosine_similarity_score))
 
     scores.sort(key=lambda x: x[2], reverse=True)
 
