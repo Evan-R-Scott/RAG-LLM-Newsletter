@@ -1,0 +1,11 @@
+{
+    "document_directory": "documents",
+    "rss_feeds_store": "document-fetch/newsletter_urls.json",
+    "tokenizer": "BAAI/bge-small-en-v1.5",
+    "embedding_model": "BAAI/bge-small-en-v1.5",
+    "top_k": 10,
+    "chunk_size": 512,
+    "supported_extensions": [".txt", ".json"],
+    "para_separator": "\n\n",
+    "separator": " "
+}
