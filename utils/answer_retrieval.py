@@ -21,7 +21,9 @@ def retrieve_top_k_scores(
             chunk_embeddings = np.array(chunk_embeddings)
             chunk_embeddings = normalize_vector(chunk_embeddings)
             cosine_similarity_score = np.dot(query_embeddings, chunk_embeddings)
-            scores.append((doc_id, chunk_id, cosine_similarity_score))
+            
+            if cosine_similarity_score >= 0.5:
+                scores.append((doc_id, chunk_id, cosine_similarity_score))
 
     scores.sort(key=lambda x: x[2], reverse=True)
 
