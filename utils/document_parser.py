@@ -2,7 +2,7 @@ import os
 import re
 import uuid
 from typing import Any, Dict, List
-from config import config
+from settings.app_config import config
 
 def chunk_files(
         directory_path:str,
@@ -71,30 +71,36 @@ def chunk_files(
         if not os.path.isfile(file_path):
             continue
 
-        _, ext = os.path.splitext(filename)
-        if ext.lower() not in config.supported_extensions:
-            continue
-
         try:
             with open(file_path, 'r', encoding='utf-8') as file:
-                text= file.read().strip()
+                _, ext = os.path.splitext(filename)
+                sku = os.path.splitext(filename)[0]     
+                doc_id = str(uuid.uuid4())
+
+                if ext.lower() == ".json":
+                    import json
+                    articles = json.load(file)
+                    chunks = create_chunks_from_json_file(articles, sku)
+                elif ext.lower() in config.supported_extensions:
+                    text= file.read().strip()
+            
+                    if not text: # skip empty files
+                        continue
+
+                    chunks = create_chunks_from_text_file(text, sku)
+                else:
+                    continue
+                
+                if chunks:
+                    documents[doc_id] = chunks
+
         except (UnicodeDecodeError, IOError) as e:
-            # add logging
+        # add logging
             print(f"Could not read {filename}: {e}")
             continue
-            
-        if not text: # skip empty files
-            continue
-
-        sku = os.path.splitext(filename)[0]     
-        doc_id = str(uuid.uuid4())
-
-        chunks = create_chunks_from_file(text, sku)
-        if chunks:
-            documents[doc_id] = chunks
     return documents
 
-def create_chunks_from_file(text: str, sku: str) -> Dict[str, Dict[str, Any]]:
+def create_chunks_from_text_file(text: str, sku: str) -> Dict[str, Dict[str, Any]]:
     chunks = {}
     paragraphs = re.split(config.para_separator, text)
     chunk_counter = 1
@@ -139,4 +145,20 @@ def chunk_paragraph(paragraph: str) -> List[str]:
     if current_chunk_words:
         chunks.append(config.separator.join(current_chunk_words))
     
+    return chunks
+
+def create_chunks_from_json_file(articles, sku):
+    chunks = {}
+    for idx, article in enumerate(articles):
+        chunk_id = f"chunk_{idx+1:03d}"
+        chunk_text = article.get("combined_text", "")
+
+        if not chunk_text.strip():
+            continue
+        chunks[chunk_id] = {
+                "text": chunk_text.strip(), 
+                "metadata": {
+                    "filename": sku 
+                    }
+            }  
     return chunks
