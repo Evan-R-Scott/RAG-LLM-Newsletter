@@ -1,6 +1,8 @@
 {
     "urls": [
-        "",
-        ""
+        "https://jack-clark.net/feed/",
+        "https://machinelearningmastery.com/feed/",
+        "https://techcrunch.com/feed/",
+        "https://openai.com/news/rss.xml"
     ]
 }
