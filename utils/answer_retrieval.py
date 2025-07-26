@@ -1,6 +1,6 @@
 import numpy as np
 from utils.embedding_handler import compute_embeddings
-from config import config
+from settings.app_config import config
 from typing import Dict, List, Tuple
 
 def retrieve_top_k_scores(

@@ -1,6 +1,6 @@
 import torch
 from typing import Any, Dict, List
-from config import config
+from settings.app_config import config
 
 def map_embeddings(
         documents: Dict[str, Dict[str, Dict[str, Any]]]
