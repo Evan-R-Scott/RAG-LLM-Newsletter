@@ -3,3 +3,4 @@
 documents/*
 !documents/
 !documents/.gitkeep
+*.txt

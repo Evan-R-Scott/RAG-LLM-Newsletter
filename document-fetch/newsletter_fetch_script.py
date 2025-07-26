@@ -25,9 +25,8 @@ def parse_feed(url):
 
     for entry in feed.entries:
         title = entry.get("title", "").strip()
-        #description = clean_description(entry.get("description", "").strip())
-        link = entry.get("link", "").strip()
-        published = entry.get("pubDate", "").strip()
+        #link = entry.get("link", "").strip()
+        #published = entry.get("pubDate", "").strip()
 
         description = ""
         if "content" in entry and entry.content:
