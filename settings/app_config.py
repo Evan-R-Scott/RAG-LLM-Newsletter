@@ -7,6 +7,8 @@ from transformers import AutoTokenizer, AutoModel
 class Config:
     document_directory: str
     rss_feeds_store: str
+    document_store: str
+    embedding_store: str
     tokenizer: str
     embedding_model: str
     top_k: int
