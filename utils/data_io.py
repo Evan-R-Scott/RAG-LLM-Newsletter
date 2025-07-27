@@ -24,13 +24,28 @@ def retrieve_text(
         document_data: Dict[str, Dict[str, Dict[str, Any]]]
         )-> List[str]:
     content = []
+    json_format = {}
     for match in top_results:
-        doc_id, chunk_id, _ = match
+        doc_id, chunk_id, score = match
         try:
             related_text = document_data[doc_id][chunk_id]["text"]
             if related_text and related_text.strip():
                 content.append(related_text)
+                if doc_id in json_format:
+                    json_format[doc_id].append({
+                        chunk_id: {
+                            "cosine similarity score": score,
+                            "article": related_text
+                        }})
+                else:
+                    json_format[doc_id] = [{
+                        chunk_id: {
+                            "cosine similarity score": score,
+                            "article": related_text
+                        }
+                    }]
         except (KeyError) as e:
             print(f"Could not find text for {doc_id}/{chunk_id}: {e}")
             continue
-    return content
+
+    return "".join(content), json_format
