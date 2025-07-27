@@ -5,10 +5,8 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from settings.app_config import config
-from utils.document_parser import chunk_files
-from utils.embedding_handler import map_embeddings
 from utils.answer_retrieval import retrieve_top_k_scores
-from utils.data_io import retrieve_text
+from utils.data_io import retrieve_text, read_json, save_json
 from utils.llm import generate_llm_response
 
 app = FastAPI(title="Evan's Chatbot")
@@ -26,11 +24,12 @@ class Message(BaseModel):
 @app.post("/chat", response_class=JSONResponse)
 def chat_endpoint(query: Message):
     message = query.message
-    documents_data = chunk_files(config.document_directory)
-    documents_embeddings = map_embeddings(documents_data)
+    documents_data = read_json(config.document_store)
+    documents_embeddings = read_json(config.embedding_store)
+
     top_k_similars = retrieve_top_k_scores(message, documents_embeddings)
     text_related, json_related = retrieve_text(top_k_similars, documents_data)
-
+    #save_json("random.json", json_related)
     llm_summary = generate_llm_response(text_related)
 
     return {
