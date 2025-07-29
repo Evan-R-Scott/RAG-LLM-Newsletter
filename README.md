@@ -44,5 +44,7 @@
   - https://distill.pub/rss.xml
 - arXiv AI Papers (AI research)
   - https://export.arxiv.org/rss/cs.AI
-- arXiv Machine Learning Papers (ML research) _ https://export.arxiv.org/rss/cs.LG
-  \*arXiv Computer Science Papers (all CS fields) _ https://export.arxiv.org/rss/cs
+- arXiv Machine Learning Papers (ML research)
+  - https://export.arxiv.org/rss/cs.LG
+- arXiv Computer Science Papers (all CS fields)
+  - https://export.arxiv.org/rss/cs
