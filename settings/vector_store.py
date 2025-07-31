@@ -16,7 +16,10 @@ class VectorStore:
         return cls._instance
     
     def add_chunks(self, doc_id: str, chunks: List['Chunk']):
-        self.data[doc_id] = [chunks]
+        if doc_id in self.data:
+            self.data[doc_id].extend(chunks)
+        else:
+            self.data[doc_id] = [chunks]
     
     def retrieve_top_k_text(self, top_k: int = 5):
         pass
