@@ -2,11 +2,11 @@ import os
 import re
 import uuid
 from typing import Any, Dict, List
-from utils.embedding_handler import compute_embeddings
+from utils.embedding_handler import prepare_embeddings
 from settings import Config, Logger, VectorStore, Chunk
 
 config = Config.get_instance()
-logger = Logger.get_daily_logger("data_fetch")
+daily_logger = Logger.get_daily_logger("data_fetch")
 vector_store = VectorStore.get_instance()
 vector_store.reset()
 
@@ -64,10 +64,11 @@ def chunk_files(
 
     """
     if not os.path.exists(directory_path):
-        raise FileNotFoundError(f"Directory not found: {directory_path}")
+        daily_logger.critical(f"Directory not found: {directory_path}")
+        raise FileNotFoundError
     
-    if config.chunk_size <= 0:
-        raise ValueError("chunk_size must be positive")
+    # if config.chunk_size <= 0:
+    #     raise ValueError("chunk_size must be positive")
     
     #documents = {}
 
@@ -75,6 +76,7 @@ def chunk_files(
         file_path = os.path.join(directory_path, filename)
 
         if not os.path.isfile(file_path):
+            daily_logger.warning(f"{file_path} is not a valid file")
             continue
 
         try:
@@ -95,15 +97,17 @@ def chunk_files(
 
                 #     chunks = create_chunks_from_text_file(text, sku)
                 else:
+                    daily_logger.warning(f"{filename} is a {ext} extension which is an unsupported document type currently.")
                     continue
                 
                 if chunks:
                     vector_store.add_chunks(doc_id, chunks)
+                    daily_logger.info(f"Added {len(chunks)} chunks to doc_id: {doc_id} in the VectorStore")
                     #documents[doc_id] = chunks
 
         except (UnicodeDecodeError, IOError) as e:
         # add logging
-            print(f"Could not read {filename}: {e}")
+            daily_logger.warning(f"Could not read {filename}: {e}")
             continue
     #return documents
     return vector_store
@@ -160,10 +164,10 @@ def create_chunks_from_json_file(articles, sku):
     for idx, article in enumerate(articles):
         chunk_id = f"chunk_{idx+1:03d}"
         chunk_text = article.get("combined_text", "")
-
+        chunk_title = article.get("title", "")
         if not chunk_text.strip():
             continue
-        embeddings = compute_embeddings(chunk_text)
+        embeddings = prepare_embeddings(chunk_text)
         # chunks[chunk_id] = {
         #         "text": chunk_text.strip(), 
         #         "metadata": {
@@ -172,6 +176,8 @@ def create_chunks_from_json_file(articles, sku):
         #     }
         chunks.append(Chunk(
             id=chunk_id,
+            newsletter=sku,
+            title=chunk_title,
             text=chunk_text,
             embeddings = embeddings
         ))
