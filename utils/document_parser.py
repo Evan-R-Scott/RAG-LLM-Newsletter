@@ -12,7 +12,7 @@ vector_store.reset()
 
 def chunk_files(
         directory_path:str,
-        ) -> Dict[str, Dict[str, Dict[str, Any]]]:
+        ) -> VectorStore: #Dict[str, Dict[str, Dict[str, Any]]]:
     """
     Breaks down the text stored in document files into chunks for efficient storing and parsing for later LLM/RAG use
 
@@ -106,6 +106,7 @@ def chunk_files(
             print(f"Could not read {filename}: {e}")
             continue
     #return documents
+    return vector_store
 
 # def create_chunks_from_text_file(text: str, sku: str) -> Dict[str, Dict[str, Any]]:
 #     chunks = {}

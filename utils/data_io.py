@@ -22,6 +22,12 @@ def read_json(path: str) -> Any:
         print(f"Error reading JSON from {path}: {e}")
         raise
 
+def save_pkl(path: str, data: Any) -> Any:
+    pass
+
+def read_pkl(path: str) -> Any:
+    pass
+
 
 def retrieve_text(
         top_results: List[Tuple[str, str, float]],
