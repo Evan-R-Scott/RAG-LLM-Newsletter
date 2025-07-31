@@ -1,7 +1,10 @@
 import numpy as np
 from utils.embedding_handler import compute_embeddings
-from settings.app_config import config
+from settings import Config, Logger
 from typing import Dict, List, Tuple
+
+config = Config.get_instance()
+logger = Logger.get_runtime_logger("chatbot")
 
 def retrieve_top_k_scores(
         query:str,

@@ -1,5 +1,9 @@
 import json
 from typing import Any, Dict, List, Tuple
+from settings import Config, Logger
+
+config = Config.get_instance()
+logger = Logger.get_runtime_logger("chatbot")
 
 def save_json(path: str, data: Any) -> None:
     try:
