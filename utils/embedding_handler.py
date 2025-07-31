@@ -1,4 +1,5 @@
 import torch
+import numpy as np
 from typing import Any, Dict, List
 from settings import Config, Logger
 
@@ -57,6 +58,11 @@ logger = Logger.get_daily_logger("data_fetch")
 #     print(f"Generated embeddings for {len(mapped_document_db)} documents")
 #     return mapped_document_db
 
+def prepare_embeddings(input: str) -> np.ndarray:
+    embeddings = np.array(compute_embeddings(input))
+    embeddings = normalize_vector(embeddings)
+    return embeddings
+
 def compute_embeddings(query: str) -> List[float]:
     """
     A given query (string) is converted into its equivalent embedding for future comparision
@@ -78,3 +84,9 @@ def compute_embeddings(query: str) -> List[float]:
         query_embeddings = query_embeddings.tolist()
 
     return query_embeddings
+
+def normalize_vector(vector: np.array) -> np.ndarray:
+    norm = np.linalg.norm(vector)
+    if norm == 0:
+        return vector
+    return vector / norm
