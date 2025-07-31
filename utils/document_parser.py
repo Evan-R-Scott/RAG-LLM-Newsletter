@@ -2,7 +2,13 @@ import os
 import re
 import uuid
 from typing import Any, Dict, List
-from settings.app_config import config
+from utils.embedding_handler import compute_embeddings
+from settings import Config, Logger, VectorStore, Chunk
+
+config = Config.get_instance()
+logger = Logger.get_daily_logger("data_fetch")
+vector_store = VectorStore.get_instance()
+vector_store.reset()
 
 def chunk_files(
         directory_path:str,
@@ -63,7 +69,7 @@ def chunk_files(
     if config.chunk_size <= 0:
         raise ValueError("chunk_size must be positive")
     
-    documents = {}
+    #documents = {}
 
     for filename in os.listdir(directory_path):
         file_path = os.path.join(directory_path, filename)
@@ -81,84 +87,91 @@ def chunk_files(
                     import json
                     articles = json.load(file)
                     chunks = create_chunks_from_json_file(articles, sku)
-                elif ext.lower() in config.supported_extensions:
-                    text= file.read().strip()
+                # elif ext.lower() in config.supported_extensions:
+                #     text= file.read().strip()
             
-                    if not text: # skip empty files
-                        continue
+                #     if not text: # skip empty files
+                #         continue
 
-                    chunks = create_chunks_from_text_file(text, sku)
+                #     chunks = create_chunks_from_text_file(text, sku)
                 else:
                     continue
                 
                 if chunks:
-                    documents[doc_id] = chunks
+                    vector_store.add_chunks(doc_id, chunks)
+                    #documents[doc_id] = chunks
 
         except (UnicodeDecodeError, IOError) as e:
         # add logging
             print(f"Could not read {filename}: {e}")
             continue
-    return documents
+    #return documents
 
-def create_chunks_from_text_file(text: str, sku: str) -> Dict[str, Dict[str, Any]]:
-    chunks = {}
-    paragraphs = re.split(config.para_separator, text)
-    chunk_counter = 1
+# def create_chunks_from_text_file(text: str, sku: str) -> Dict[str, Dict[str, Any]]:
+#     chunks = {}
+#     paragraphs = re.split(config.para_separator, text)
+#     chunk_counter = 1
 
-    for paragraph in paragraphs:
-        if not paragraph.strip():
-            continue
-        paragraph_chunks = chunk_paragraph(paragraph)
+#     for paragraph in paragraphs:
+#         if not paragraph.strip():
+#             continue
+#         paragraph_chunks = chunk_paragraph(paragraph)
 
-        for chunk_text in paragraph_chunks:
-            #chunk_id = str(uuid.uuid4())
-            chunk_id = f"chunk_{chunk_counter:03d}"
-            chunks[chunk_id] = {
-                "text": chunk_text.strip(), 
-                "metadata": {
-                    "filename": sku 
-                    }
-            }
-            chunk_counter += 1
+#         for chunk_text in paragraph_chunks:
+#             #chunk_id = str(uuid.uuid4())
+#             chunk_id = f"chunk_{chunk_counter:03d}"
+#             chunks[chunk_id] = {
+#                 "text": chunk_text.strip(), 
+#                 "metadata": {
+#                     "filename": sku 
+#                     }
+#             }
+#             chunk_counter += 1
                     
-    return chunks
+#     return chunks
     
-def chunk_paragraph(paragraph: str) -> List[str]:
-    words = paragraph.split(config.separator)
-    current_chunk_words = []
-    chunks = []   
+# def chunk_paragraph(paragraph: str) -> List[str]:
+#     words = paragraph.split(config.separator)
+#     current_chunk_words = []
+#     chunks = []   
 
-    for word in words:
-        if current_chunk_words:
-            test_chunk = config.separator.join(current_chunk_words) + config.separator + word
-        else:
-            test_chunk = word
-        test_tokens = config.tokenizer.tokenize(test_chunk)
+#     for word in words:
+#         if current_chunk_words:
+#             test_chunk = config.separator.join(current_chunk_words) + config.separator + word
+#         else:
+#             test_chunk = word
+#         test_tokens = config.tokenizer.tokenize(test_chunk)
 
-        if len(test_tokens) <= config.chunk_size:
-            current_chunk_words.append(word)
-        else:
-            if current_chunk_words:
-                chunks.append(config.separator.join(current_chunk_words))
-            current_chunk_words = [word]
+#         if len(test_tokens) <= config.chunk_size:
+#             current_chunk_words.append(word)
+#         else:
+#             if current_chunk_words:
+#                 chunks.append(config.separator.join(current_chunk_words))
+#             current_chunk_words = [word]
     
-    if current_chunk_words:
-        chunks.append(config.separator.join(current_chunk_words))
+#     if current_chunk_words:
+#         chunks.append(config.separator.join(current_chunk_words))
     
-    return chunks
+#     return chunks
 
 def create_chunks_from_json_file(articles, sku):
-    chunks = {}
+    chunks = []
     for idx, article in enumerate(articles):
         chunk_id = f"chunk_{idx+1:03d}"
         chunk_text = article.get("combined_text", "")
 
         if not chunk_text.strip():
             continue
-        chunks[chunk_id] = {
-                "text": chunk_text.strip(), 
-                "metadata": {
-                    "filename": sku 
-                    }
-            }  
+        embeddings = compute_embeddings(chunk_text)
+        # chunks[chunk_id] = {
+        #         "text": chunk_text.strip(), 
+        #         "metadata": {
+        #             "filename": sku 
+        #             }
+        #     }
+        chunks.append(Chunk(
+            id=chunk_id,
+            text=chunk_text,
+            embeddings = embeddings
+        ))
     return chunks
