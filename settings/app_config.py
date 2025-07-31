@@ -5,7 +5,6 @@ from transformers import AutoTokenizer, AutoModel
 
 """ cls refers to the class itself bc of decorator whereas self refers to the instance"""
 class Config:
-    # TODO do i want this to be a singleton? bc what happens if i update config but it keeps getting old settings, when would i know to reset it or just have it create each time so i can guarantee its up to date
     """Singleton"""
     _instance: Optional['Config'] = None
     _initialized: bool = False
