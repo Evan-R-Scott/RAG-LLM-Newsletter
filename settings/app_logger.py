@@ -42,16 +42,16 @@ class Logger:
             cls._instances[key] = super().__new__(cls)
         return cls._instances[key]    
 
-    def get_logger(self):
+    def get_logger(self) -> logging.Logger:
         return Logger._loggers[self.key]
 
     @classmethod
-    def get_daily_logger(cls, name: str):
+    def get_daily_logger(cls, name: str) -> logging.Logger:
         ins = cls(name=name, log="daily")
         return ins.get_logger()
     
     @classmethod
-    def get_runtime_logger(cls, name: str):
+    def get_runtime_logger(cls, name: str) -> logging.Logger:
         ins = cls(name=name, log="runtime")
         return ins.get_logger()
 

@@ -28,7 +28,7 @@ class Config:
         return cls._instance
     
     @classmethod
-    def get_instance(cls):
+    def get_instance(cls) -> 'Config':
         if cls._instance is None:
             cls._instance = cls()
         return cls._instance
