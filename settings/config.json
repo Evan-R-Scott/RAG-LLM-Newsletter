@@ -1,8 +1,7 @@
 {
     "document_directory": "documents",
-    "rss_feeds_store": "document_fetch/newsletter_urls.json",
-    "document_store": "data_store/document_data.json",
-    "embedding_store": "data_store/embedding_data.json",
+    "rss_feeds_store": "document_fetch/newsletter_urls.pkl",
+    "vector_store": "data_store/vector_db.json",
     "tokenizer": "BAAI/bge-small-en-v1.5",
     "embedding_model": "BAAI/bge-small-en-v1.5",
     "top_k": 10,
