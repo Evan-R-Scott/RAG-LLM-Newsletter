@@ -4,12 +4,14 @@ from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from settings.app_config import config
+from settings import Config, Logger
 from utils.answer_retrieval import retrieve_top_k_scores
 from utils.data_io import retrieve_text, read_json, save_json
 from utils.llm import generate_llm_response
 
 app = FastAPI(title="Evan's Chatbot")
+config = Config.get_instance()
+logger = Logger.get_runtime_logger("chatbot")
 
 class Message(BaseModel):
     message: str
