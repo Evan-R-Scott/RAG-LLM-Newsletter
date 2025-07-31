@@ -29,7 +29,7 @@
 
 - AI News (AI industry developments)
   - Newsletter:
-  - RSS feed: https://www.artificialintelligence*news.com/feed/
+  - RSS feed: https://www.artificialintelligence-news.com/feed/
 - Import AI (AI policy & research summarization)
   - Newsletter:
   - RSS feed: https://jack-clark.net/feed/
