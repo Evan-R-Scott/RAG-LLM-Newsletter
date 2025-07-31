@@ -10,7 +10,8 @@ def run():
     # saving these is actually unnecessary extra storage but done for debugging/expansion purposes 
     parse_feeds()
     vector_store = chunk_files(config.document_directory)
-    save_pkl(config.vector_store_loc, vector_store)
+    # write out to a .pkl file for later use at runtime by chatbot
+    vector_store.save()
     # save_json(config.document_store, documents_data)
     # documents_embeddings = map_embeddings(documents_data)
     # save_json(config.embedding_store, documents_embeddings)
