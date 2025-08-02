@@ -103,9 +103,9 @@ def create_chunks_from_json_file(articles):
     chunk_counter = 1
     for newsletter_name, articles in articles.items():
         for idx, article in enumerate(articles):
-            if article.get('extraction_method') == 'failed':
-                daily_logger.warning(f"Skipping failed article: {article.get('title', 'Unknown')}")
-                continue
+            # if article.get('extraction_method') == 'failed':
+            #     daily_logger.warning(f"Skipping failed article: {article.get('title', 'Unknown')}")
+            #     continue
             
             content = article.get('content', "").strip()
             title = article.get('title', "Unknown Title")
