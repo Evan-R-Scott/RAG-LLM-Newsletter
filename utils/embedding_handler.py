@@ -33,30 +33,6 @@ logger = Logger.get_daily_logger("data_fetch")
 #                 }
 #         }
 #     """
-#     mapped_document_db = {}
-#     for doc_id, document_chunks in documents.items():
-#         mapped_embeddings = {}
-#         for chunk_id, chunk_content in document_chunks.items():
-#             text = chunk_content.get("text")
-            
-#             if not text or not text.strip():
-#                 # add logging
-#                 print(f"Empty text found for {doc_id}/{chunk_id}")
-#                 continue
-
-#             encoded_input = config.tokenizer(
-#                 text,
-#                 padding=True,
-#                 truncation=True,
-#                 return_tensors="pt")
-            
-#             with torch.no_grad():
-#                 embeddings = config.embedding_model(**encoded_input).last_hidden_state.mean(dim=1).squeeze().tolist()
-
-#             mapped_embeddings[chunk_id] = embeddings
-#         mapped_document_db[doc_id] = mapped_embeddings
-#     print(f"Generated embeddings for {len(mapped_document_db)} documents")
-#     return mapped_document_db
 
 def prepare_embeddings(input: str) -> np.ndarray:
     embeddings = np.array(compute_embeddings(input))
