@@ -33,9 +33,6 @@
 - Import AI (AI policy & research summarization)
   - Newsletter:
   - RSS feed: https://jack-clark.net/feed/
-- Machine Learning Mastery (ML tutorials & guides)
-  - Newsletter:
-  - RSS feed: https://machinelearningmastery.com/feed/
 
 ### Company Research Blogs
 
@@ -48,9 +45,6 @@
 - Microsoft AI Blog
   - Newsletter:
   - RSS feed: https://blogs.microsoft.com/ai/feed/
-- OpenAI Blog
-  - Newsletter:
-  - RSS feed: https://openai.com/news/rss.xml
 
 ### Academic Research
 
