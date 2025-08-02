@@ -10,8 +10,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (!query) return;
 
-        addMessageToChat("user", query);
-
         input.value = "";
 
         try {
@@ -24,11 +22,10 @@ document.addEventListener("DOMContentLoaded", () => {
             });
 
             const data = await response.json();
-
+            
+            addMessageToChat("user", query);
             addMessageToChat("bot", data.summary);
             addMessageToChat(null, data.related_text);
-
-            chatWindow.scrollTop = chatWindow.scrollHeight;
 
         } catch (err) {
             console.error("Error:", err);
@@ -39,8 +36,12 @@ document.addEventListener("DOMContentLoaded", () => {
         if (sender) {
             const messageDiv = document.createElement('div');
             messageDiv.classList.add('message', sender);
-            messageDiv.textContent = content;
+            messageDiv.innerHTML = content;
             chatWindow.appendChild(messageDiv);
+
+            if(sender == 'user') {
+                messageDiv.scrollIntoView({ behavior: 'smooth', block: 'end' });
+            }
         } else {
             const jsonString = typeof content === "string" ? content : JSON.stringify(content, null, 2);
             sidebarWindow.textContent = jsonString;
