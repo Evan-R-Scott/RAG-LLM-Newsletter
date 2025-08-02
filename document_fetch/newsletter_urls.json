@@ -1,19 +1,19 @@
 {
     "urls": {
-        "Import AI": "https://jack-clark.net/feed/",
-        "Tech Crunch": "https://techcrunch.com/feed/",
-        "MIT Technology Review": "https://www.technologyreview.com/feed/", 
+        "Import_AI": "https://jack-clark.net/feed/",
+        "Tech_Crunch": "https://techcrunch.com/feed/",
+        "MIT_Technology_Review": "https://www.technologyreview.com/feed/", 
         "VentureBeat": "https://venturebeat.com/feed/",
-        "The Verge": "https://www.theverge.com/rss/index.xml",
+        "The_Verge": "https://www.theverge.com/rss/index.xml",
         "Distill": "https://distill.pub/rss.xml",
-        "arXiv Artificial Intelligence": "https://export.arxiv.org/rss/cs.AI",
-        "Google AI Blog": "https://feeds.feedburner.com/blogspot/gJZg",
-        "Meta Engineering Blog": "https://engineering.fb.com/feed/",
-        "AI News": "https://www.artificialintelligence-news.com/feed/",
-        "Microsoft AI Blog": "https://blogs.microsoft.com/ai/feed/",
-        "arXiv Machine Learning": "https://export.arxiv.org/rss/cs.LG",
-        "Ars Technica": "https://feeds.arstechnica.com/arstechnica/index",
+        "arXiv_Artificial_Intelligence": "https://export.arxiv.org/rss/cs.AI",
+        "Google_AI_Blog": "https://feeds.feedburner.com/blogspot/gJZg",
+        "Meta_Engineering_Blog": "https://engineering.fb.com/feed/",
+        "AI_News": "https://www.artificialintelligence-news.com/feed/",
+        "Microsoft_AI_Blog": "https://blogs.microsoft.com/ai/feed/",
+        "arXiv_Machine_Learning": "https://export.arxiv.org/rss/cs.LG",
+        "Ars_Technica": "https://feeds.arstechnica.com/arstechnica/index",
         "Wired": "https://www.wired.com/feed/rss",
-        "arXiv Computer S cience": "https://export.arxiv.org/rss/cs"
+        "arXiv_Computer Science": "https://export.arxiv.org/rss/cs"
     }
 }
