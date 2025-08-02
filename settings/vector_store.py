@@ -2,6 +2,7 @@ import pickle
 import numpy as np
 from typing import Optional, List, Dict, Tuple
 from settings import Config, Logger
+from utils.data_io import save_json
 
 config = Config.get_instance()
 daily_logger = Logger.get_daily_logger("data_fetch")
@@ -29,27 +30,26 @@ class VectorStore:
         if doc_id in self.data:
             self.data[doc_id].extend(chunks)
         else:
-            self.data[doc_id] = [chunks]
+            self.data[doc_id] = chunks
     
     def cosine_similarity(self, a: np.ndarray, b: np.ndarray) -> float:
         return np.dot(a, b)
     
-    def retrieve_top_k(self, query_embedding: np.ndarray) -> Optional[List[Tuple[str, 'Chunk']]]:
+    def retrieve_top_k(self, query_embedding: np.ndarray) -> Optional[List['Chunk']]:
         similars = []
-
-        for doc_id, document in self.data:
-            for chunk_obj in document:
-                similarity_score = self.cosine_similarity(query_embedding, chunk_obj.embeddings)
-                chunk_obj.set_similarity_score(similarity_score)
-                similars.append(doc_id, chunk_obj.id, similarity_score)
+        for doc_id, document in self.data.items():
+            for chunk in document:
+                similarity_score = self.cosine_similarity(query_embedding, chunk.embeddings)
+                chunk.set_similarity_score(similarity_score)
+                similars.append((doc_id, chunk, similarity_score))
 
         similars.sort(key=lambda x: x[2], reverse=True)
 
         results = []
-        for doc_id, chunk_id, similarity_score in similars[:config.top_k]:
+        for doc_id, chunk, similarity_score in similars[:config.top_k]:
             if similarity_score < 0.6:
                 break
-            results.append((doc_id, self.data[doc_id][chunk_id]))
+            results.append(chunk)
         return results
 
     @classmethod
@@ -91,9 +91,10 @@ class Chunk:
     """
     For this use case, a Chunk object could be more accurately named an Article object since I developed the chunking algorithm such that newsletter data was chunked by articles to retain all relevant information and get a better holistic view for the LLM but I left it named Chunk for the sake of RAG terminology.
     """
-    def __init__(self, id: str, newsletter: str, title: Optional[str], text: Optional[str], embeddings: Optional[List[int]]):
+    def __init__(self, id: str, newsletter: str, url: str, title: Optional[str], text: Optional[str], embeddings: Optional[List[int]]):
         self.id=id
-        self.newsletter=newsletter,
+        self.newsletter=newsletter
+        self.url = url
         self.title=title
         self.text=text
         self.embeddings=embeddings
