@@ -14,6 +14,6 @@
         "arXiv_Machine_Learning": "https://export.arxiv.org/rss/cs.LG",
         "Ars_Technica": "https://feeds.arstechnica.com/arstechnica/index",
         "Wired": "https://www.wired.com/feed/rss",
-        "arXiv_Computer Science": "https://export.arxiv.org/rss/cs"
+        "arXiv_Computer_Science": "https://export.arxiv.org/rss/cs"
     }
 }
