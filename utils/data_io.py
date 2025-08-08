@@ -1,17 +1,9 @@
 import json
 from typing import Any, Dict, List, Tuple
-from settings import Config, Logger
+from settings import Config, Logger, Chunk
 
 config = Config.get_instance()
 runtime_logger = Logger.get_runtime_logger("chatbot")
-
-def save_json(path: str, data: Any) -> None:
-    try:
-        with open(path, 'w') as f:
-            json.dump(data, f, indent=4)
-    except (OSError, TypeError) as e:
-        runtime_logger.error(f"Error saving JSON to {path}: {e}")
-        raise
 
 def read_json(path: str) -> Any:
     try:
@@ -24,8 +16,17 @@ def read_json(path: str) -> Any:
 
 
 def format_chunks(
-        chunk_objs #:List[Tuple[str, 'Chunk']]
-        ): # -> Tuple[List[Dict[str, Any]], Dict[str, List[Dict[str, Dict[str, Any]]]]]:
+        chunk_objs: List['Chunk']
+        ) -> Tuple[List[Dict[str, Any]], Dict[str, List[Dict[str, Any]]]]:
+    """
+    Format content for LLM summarization and JSON ouput to interface
+
+    Args:
+        chunk_objs: List of <= top_k chunks/articles similar to user query
+    
+    Returns:
+        (List of articles formatted, JSON-formatted summary content for sidebar)
+    """
     articles_text = []
     json_formatted = {}
     for chunk in chunk_objs:
@@ -44,6 +45,7 @@ def format_chunks(
             else:
                 json_formatted[chunk.newsletter] = [{
                     "article_title": chunk.title,
+                    "url": chunk.url,
                     "similarity_score": chunk.similarity_score
                 }]
     return articles_text, json_formatted
