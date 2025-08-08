@@ -1,8 +1,8 @@
-import pickle
+import joblib
 import numpy as np
-from typing import Optional, List, Dict, Tuple
+from typing import Optional, List, Dict
+import os
 from settings import Config, Logger
-from utils.data_io import save_json
 
 config = Config.get_instance()
 daily_logger = Logger.get_daily_logger("data_fetch")
@@ -36,6 +36,9 @@ class VectorStore:
         return np.dot(a, b)
     
     def retrieve_top_k(self, query_embedding: np.ndarray) -> Optional[List['Chunk']]:
+        """
+        Performs cosine similarity to retrieve the top_k articles that are most relavant to the user's query
+        """
         similars = []
         for doc_id, document in self.data.items():
             for chunk in document:
@@ -43,11 +46,12 @@ class VectorStore:
                 chunk.set_similarity_score(similarity_score)
                 similars.append((doc_id, chunk, similarity_score))
 
+        # sort in descending order to access most similar articles first
         similars.sort(key=lambda x: x[2], reverse=True)
 
         results = []
         for doc_id, chunk, similarity_score in similars[:config.top_k]:
-            if similarity_score < 0.6:
+            if similarity_score < 0.3:
                 break
             results.append(chunk)
         return results
@@ -64,25 +68,22 @@ class VectorStore:
         cls._initialized = False
     
 
-    def save(self) -> None:
+    def save(self) -> None: # Run at end of preprocessing when building the VectorStore
         try:
             if self.data:
-                save_data = {'data': self.data}
-                with open(config.vector_store, 'wb') as f:
-                    pickle.dump(save_data, f)
+                joblib.dump(self.data, config.vector_store, compress=3)
                 daily_logger.info(f"Wrote {len(self.data)} documents out to {config.vector_store}")
+                file_size = os.path.getsize(config.vector_store)
+                daily_logger.info(f"VectorStore is {file_size} bytes")
             else:
                 daily_logger.warning(f"Cannot save to {config.vector_store} because VectorStore has no contents.")
         except (OSError, TypeError) as e:
             daily_logger.error(f"Error saving to {config.vector_store}: {e}")
 
-    def load(self) -> None:
+    def load(self) -> None: # Run at container startup to load VectorStore in for use at runtime
         try:
-            with open(config.vector_store, 'rb') as f:
-                loaded_data = pickle.load(f)
-            if isinstance(loaded_data, dict) and 'data' in loaded_data:
-                self.data = loaded_data['data']
-                runtime_logger.info(f"Loaded {len(self.data)} documents from {config.vector_store}")
+            self.data = joblib.load(config.vector_store)
+            runtime_logger.info(f"Loaded {len(self.data)} documents from {config.vector_store}")
         except FileNotFoundError as e:
             runtime_logger.error(f"Error reading VectorStore from {config.vector_store}: {e}")
 
@@ -114,6 +115,3 @@ class Chunk:
 
     def set_similarity_score(self, score: float) -> None:
         self.similarity_score=score
-
-# initialize Singleton for later use
-vector_store = VectorStore.get_instance()
