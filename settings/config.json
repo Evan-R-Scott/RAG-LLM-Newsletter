@@ -1,12 +1,17 @@
 {
     "document_directory": "documents",
     "rss_feeds_store": "document_fetch/newsletter_urls.json",
-    "vector_store": "data_store/vector_db.pkl",
+    "vector_store": "/app/data_store/vector_db.pkl",
     "tokenizer": "BAAI/bge-small-en-v1.5",
     "embedding_model": "BAAI/bge-small-en-v1.5",
     "top_k": 3,
+    "batch_size": 16,
     "chunk_size": 512,
     "supported_extensions": [".txt", ".json"],
     "para_separator": "\n\n",
-    "separator": " "
+    "separator": " ",
+    "llm" : {
+        "MODEL":"gpt-4o-mini",
+        "API_KEY":"API_KEY_HERE"
+    }
 }

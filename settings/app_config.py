@@ -5,7 +5,7 @@ from transformers import AutoTokenizer, AutoModel
 
 """ cls refers to the class itself bc of decorator whereas self refers to the instance"""
 class Config:
-    """Singleton"""
+    """Singleton storing hyperparameters used in preprocessing and at runtime for a centralized settings store"""
     _instance: Optional['Config'] = None
     _initialized: bool = False
 
@@ -22,7 +22,7 @@ class Config:
             self.embedding_model.eval()
             Config._initialized = True
 
-    def __new__(cls):
+    def __new__(cls) -> 'Config':
         if cls._instance is None:
             cls._instance = super().__new__(cls)
         return cls._instance
@@ -32,6 +32,3 @@ class Config:
         if cls._instance is None:
             cls._instance = cls()
         return cls._instance
-
-# initialize Singleton for later use
-config = Config.get_instance()
