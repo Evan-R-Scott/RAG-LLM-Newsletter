@@ -1,34 +1,49 @@
 import feedparser
 import time
-import os
 from newspaper import Article, ArticleException
+from typing import List, Dict, Any
 import requests
-from pathlib import Path
 from settings import Config, Logger
-from utils.data_io import read_json, save_json
+from utils.data_io import read_json
+
 
 config = Config.get_instance()
 daily_logger = Logger.get_daily_logger("data_fetch")
 
-def parse_feeds():
+def parse_feeds() -> Dict[str, List[Dict[str, Any]]]:
+    """
+    Reads in relavant content from the newsletters/RSS feeds and stores into data structure for further preprocessing
+
+    Returns:
+        Dictionary storing relavant article content indexed by newsletter
+    """
     rss_sources = read_json(config.rss_feeds_store)["urls"]
+    all_articles = {}
 
     for newsletter_name, newsletter_url in rss_sources.items():
-        output_file = create_file(newsletter_name)
         try:
             articles = parse_rss_feed(newsletter_url)
-            os.makedirs(config.document_directory, exist_ok=True)
-            save_json(output_file, {newsletter_name: articles})
+            if articles:
+                all_articles[newsletter_name] = articles
+            else:
+                daily_logger.warning(f"No articles parsed for {newsletter_name}")
             time.sleep(3)
         except Exception as e:
-            print(f"Error parsing {newsletter_url}: {e}")
+            daily_logger.error(f"Error parsing {newsletter_url}: {e}")
+    return all_articles
 
-def create_file(newsletter):
-    output_file = Path(config.document_directory) / f"{newsletter}.json"
-    return output_file
+def parse_rss_feed(url: str) -> List[Dict[str, Any]]:
+    """
+    Extracts article urls from the newsletter RSS feeds and passes
+    downstream for further extraction
 
-def parse_rss_feed(url):
+    Args:
+        url: url of the newsletter RSS feed which stores the urls of the posted articles
     
+    Returns:
+        List of the articles' content built out from that newsletter
+
+    """
     articles = []
     
     try:
@@ -57,19 +72,27 @@ def parse_rss_feed(url):
     except Exception as e:
         daily_logger.error(f"Failed to parse RSS feed {url}: {str(e)}")
         return articles
-    
+
     daily_logger.info(f"Extracted {len(articles)} articles from {url}")
     return articles
 
 
-def extract_article_data(entry):
+def extract_article_data(entry: Any) -> Dict[str, Any]:
+    """
+    Builds data for an article [entry] based on the scraped content from the pulled url
+
+    Args:
+        entry: individual article object from the newsletter RSS feed with fields like url
+
+    Returns:
+        Dictionary storing fields about the article for future processing
+    """
     article_url = entry.link
 
     article_data = {
         'title': getattr(entry, 'title', 'No Title'),
         'url': article_url,
         'content': ''
-        #'extraction_method': 'failed',
     }
 
     if 'arxiv.org' in article_url:
@@ -83,12 +106,10 @@ def extract_article_data(entry):
         if len(article.text.strip()) < 50: # article too short -> likely failed
             daily_logger.info("Article text < 100 characters")
             return None
-            #return rss_fallback_extract(entry, article_data)
         
         article_data.update({
             'content': article.text.strip(),
             'title': article.title if article.title else article_data['title']
-            #'extraction_method': 'full_extraction',
         })
         
         daily_logger.debug(f"Extracted article of length {len(article.text)} characters")
@@ -96,13 +117,21 @@ def extract_article_data(entry):
 
     except (requests.exceptions.RequestException, ArticleException) as e:
         daily_logger.warning(f"Failed to download/parse article: {article_url}: {str(e)}")
-        #return rss_fallback_extract(entry, article_data)
     except Exception as e:
         daily_logger.warning(f"Failed to extract article data from {article_url}: {str(e)}")
-        #return rss_fallback_extract(entry, article_data)
     return None
 
-def extract_arxiv_paper(entry, article_data):
+def extract_arxiv_paper(entry: Any, article_data: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Handler for ArXiv newsletter articles since their RSS feeds are formatted differently with abstract summaries rather than full article pulls. Builds data for an ArXiv article [entry] based on the scraped content.
+
+    Args:
+        entry: individual article object from the newsletter RSS feed
+        article_data: default object store for article content
+
+    Returns:
+        Dictionary storing fields about the article for future processing
+    """
     abstract = getattr(entry, 'summary', '')
 
     if abstract:
@@ -117,57 +146,10 @@ def extract_arxiv_paper(entry, article_data):
         if len(abstract.strip()) > 50:
             article_data.update({
                 'content': f"{abstract}"
-                #'extraction_method': 'arxiv_abstract',
             })
             daily_logger.debug(f"Extracted arXiv abstract: {len(abstract)} characters")
             return article_data
     
     # if no abstract
     daily_logger.warning(f"No content available for {entry.link}, avoid article")
-    # article_data.update({
-    #         'extraction_method': "failed"
-    #     })
-    #return article_data
     return None
-
-# def rss_fallback_extract(entry, article_data):
-#     daily_logger.info(f"Using RSS content as fallback for URL: {entry.link}")
-#     content = ""
-
-#     if hasattr(entry, 'content') and entry.content:
-#         content = entry.content[0].value
-#     elif hasattr(entry, 'description') and entry.description:
-#         content = entry.description
-#     elif hasattr(entry, 'summary') and entry.summary:
-#         content = entry.summary
-#     else:
-#         daily_logger.warning(f"No content available for {entry.link}, avoid article")
-#         article_data.update({
-#                 'extraction_method': "failed"
-#             })
-#         return article_data
-
-#     try:
-#         from bs4 import BeautifulSoup
-#         soup = BeautifulSoup(content, 'html.parser')
-#         text = soup.get_text(separator=' ', strip=True)
-
-#         if len(text.strip()) > 50:
-#             article_data.update({
-#                 'content': text,
-#                 'extraction_method': "description"
-#             })
-#         else:
-#             daily_logger.warning(f"No content available for {entry.link}, avoid article")
-#             article_data.update({
-#                 'extraction_method': "failed"
-#             })
-#     except Exception as e:
-#         daily_logger.warning(f"Failed to clan RSS content: {str(e)}")
-#         article_data.update({
-#                 'extraction_method': "failed"
-#             })
-#     return article_data
-
-if __name__ == "__main__":
-    parse_feeds()
