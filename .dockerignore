@@ -1,0 +1,6 @@
+documents/
+data_store/
+__pycache__/
+.venv/
+.git/
+*.log

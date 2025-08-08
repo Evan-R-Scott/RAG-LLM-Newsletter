@@ -1,12 +1,12 @@
 import logging
+import os
 from typing import Dict
 
 class Logger:
-    """Singletons"""
     """
     Multiple Logger Singletons based on application
-        - 1 for logging the daily script that retrieves newsletter data
-        - 1 for logging interactions at runtime with the chatbot
+        - ['data_fetch'] for logging the daily script that retrieves newsletter data
+        - ['chatbot'] for logging interactions at runtime with the chatbot
     """
     _instances: Dict[str, 'Logger'] = {}
     _loggers: Dict[str, logging.Logger]  = {}
@@ -22,7 +22,10 @@ class Logger:
 
             if not logger.handlers:
                 mode = 'w' if self.log == "runtime" else 'a'
-                filename = f"{self.key}.log"
+
+                log_dir = "/app/logs"
+                os.makedirs(log_dir, exist_ok=True)
+                filename = os.path.join(log_dir, f"{self.key}.log")
             
                 file_handler = logging.FileHandler(filename=filename, mode=mode)
                 file_handler.setLevel(logging.INFO)
@@ -35,7 +38,7 @@ class Logger:
                 logger.addHandler(file_handler)
                 logger.setLevel(logging.INFO)
 
-    def __new__(cls, name: str, log: str):
+    def __new__(cls, name: str, log: str) -> 'Logger':
         key = f"{name}_{log}"
         
         if key not in cls._instances:
@@ -54,7 +57,3 @@ class Logger:
     def get_runtime_logger(cls, name: str) -> logging.Logger:
         ins = cls(name=name, log="runtime")
         return ins.get_logger()
-
-# initialize Singletons for later use
-daily_logger = Logger.get_daily_logger(name="data_fetch")
-runtime_logger = Logger.get_runtime_logger(name="chatbot")
