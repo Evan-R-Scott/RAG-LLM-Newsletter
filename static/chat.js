@@ -15,16 +15,54 @@ document.addEventListener("DOMContentLoaded", () => {
         setLoading(true);
 
         try {
-            const response = await fetch("/chat", {
+            // get related articles
+            const articleResponse = await fetch("/related_articles", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ message: query }),
             });
-            const data = await response.json();
+            const article_data = await articleResponse.json();
+            updateSidebar(article_data.related_text);
+
+            // start streaming chat response
+            const chatResponse = await fetch("/chat", {
+                method: "POST",
+                headers: { 
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    message: query,
+                    articles_list: article_data.articles_list
+                }),
+            });
+
+            if (!chatResponse.ok) {
+                throw new Error(`HTTP ${chatResponse.status}: ${chatResponse.statusText}`);
+            }
+
+            // add empty bot message to fill with streamed content
+            addMessage("bot", "");
+            const lastBotMessage = chatWindow.querySelector(".message.bot:last-child .message-content");
+            let accumulatedText = "";
+
+            // read the plain text stream directly from llm
+            const reader = chatResponse.body.getReader();
+            const decoder = new TextDecoder();
+
+            while (true) {
+                const { value, done } = await reader.read();
+                if (done) break;
+
+                const chunk = decoder.decode(value, { stream: true });
+                accumulatedText += chunk;
+                
+                // apply markdown formatting
+                lastBotMessage.innerHTML = formatBotMessage(accumulatedText);
+                lastBotMessage.scrollIntoView({ behavior: 'smooth', block: 'end' });
+            }
             
             setLoading(false);
-            addMessage("bot", data.summary);
-            updateSidebar(data.related_text);
+
         } catch (err) {
             console.error("Error:", err);
             setLoading(false);
@@ -39,20 +77,25 @@ document.addEventListener("DOMContentLoaded", () => {
         const messageContent = document.createElement('div');
         messageContent.classList.add('message-content');
         
-        messageContent.innerHTML = sender === 'bot' ? formatBotMessage(content) : escapeHtml(content);
+        if (sender === 'bot' && content) {
+            messageContent.innerHTML = formatBotMessage(content);
+        } else {
+            messageContent.textContent = content || "";
+        }
         
         messageDiv.appendChild(messageContent);
         chatWindow.appendChild(messageDiv);
         messageDiv.scrollIntoView({ behavior: 'smooth', block: sender === 'bot' ? 'start' : 'end' });
     }
 
-// The code below was AI-generated because Markdown was not integrating well with LLM generation
+// AI for this Markdown formatting below
 
     function formatBotMessage(text) {
         // escape HTML first
         let formatted = escapeHtml(text);
         
         // headers
+        formatted = formatted.replace(/^#### (.+)$/gm, '<div style="font-size: 16px; font-weight: 600; margin: 6px 0 3px 0;">$1</div>');
         formatted = formatted.replace(/^### (.+)$/gm, '<div style="font-size: 17px; font-weight: 600; margin: 8px 0 4px 0;">$1</div>');
         formatted = formatted.replace(/^## (.+)$/gm, '<div style="font-size: 18px; font-weight: 600; margin: 10px 0 5px 0;">$1</div>');
         formatted = formatted.replace(/^# (.+)$/gm, '<div style="font-size: 20px; font-weight: 600; margin: 12px 0 6px 0;">$1</div>');
@@ -81,30 +124,9 @@ document.addEventListener("DOMContentLoaded", () => {
         input.disabled = isLoading;
         submitButton.disabled = isLoading;
         submitButton.textContent = isLoading ? 'Thinking...' : 'Send';
-        
-        if (isLoading) {
-            addTypingIndicator();
-            sidebarWindow.textContent = "Searching for relevant articles...";
-        } else {
-            removeTypingIndicator();
-        }
     }
 
     function updateSidebar(content) {
         sidebarWindow.textContent = typeof content === "string" ? content : JSON.stringify(content, null, 2);
-    }
-
-    function addTypingIndicator() {
-        const typingDiv = document.createElement('div');
-        typingDiv.classList.add('typing-indicator');
-        typingDiv.id = 'typing-indicator';
-        typingDiv.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
-        chatWindow.appendChild(typingDiv);
-        typingDiv.scrollIntoView({ behavior: 'smooth', block: 'end' });
-    }
-
-    function removeTypingIndicator() {
-        const indicator = document.getElementById('typing-indicator');
-        if (indicator) indicator.remove();
     }
 });
