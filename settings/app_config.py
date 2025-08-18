@@ -2,7 +2,6 @@ import json
 from typing import Optional
 from transformers import AutoTokenizer, AutoModel
 
-
 """ cls refers to the class itself bc of decorator whereas self refers to the instance"""
 class Config:
     """Singleton storing hyperparameters used in preprocessing and at runtime for a centralized settings store"""

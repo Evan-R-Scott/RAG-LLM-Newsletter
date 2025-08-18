@@ -5,13 +5,10 @@
     "tokenizer": "BAAI/bge-small-en-v1.5",
     "embedding_model": "BAAI/bge-small-en-v1.5",
     "top_k": 3,
-    "batch_size": 16,
-    "chunk_size": 512,
-    "supported_extensions": [".txt", ".json"],
-    "para_separator": "\n\n",
-    "separator": " ",
+    "batch_size": 256,
+    "max_content_length": 3000,
     "llm" : {
-        "MODEL":"gpt-4o-mini",
-        "API_KEY":"API_KEY_HERE"
+        "Model":"local_llm",
+        "Endpoint":"http://ollama:11434"
     }
 }

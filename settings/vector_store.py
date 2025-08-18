@@ -51,7 +51,7 @@ class VectorStore:
 
         results = []
         for doc_id, chunk, similarity_score in similars[:config.top_k]:
-            if similarity_score < 0.3:
+            if similarity_score < 0.6:
                 break
             results.append(chunk)
         return results
@@ -90,28 +90,16 @@ class VectorStore:
 
 class Chunk:
     """
-    For this use case, a Chunk object could be more accurately named an Article object since I developed the chunking algorithm such that newsletter data was chunked by articles to retain all relevant information and get a better holistic view for the LLM but I left it named Chunk for the sake of RAG terminology.
+    For this use case, a Chunk object could be more accurately named an Article object since I set up the chunking such that newsletter data was chunked by articles to retain all relevant information and get a better holistic view for the LLM but I left it named Chunk for the sake of terminology.
     """
-    def __init__(self, id: str, newsletter: str, url: str, title: Optional[str], text: Optional[str], embeddings: Optional[List[int]]):
+    def __init__(self, id: str, newsletter: str, url: str, title: str, text: str, embeddings: List[int]):
         self.id=id
         self.newsletter=newsletter
-        self.url = url
+        self.url=url
         self.title=title
         self.text=text
         self.embeddings=embeddings
         self.similarity_score: Optional[float]=None
-    
-    def set_newsletter(self, newsletter: str) -> None:
-        self.newsletter=newsletter
-
-    def set_title(self, title:str) -> None:
-        self.title=title
-
-    def set_text(self, text: str) -> None:
-        self.text=text
-    
-    def set_embedding(self, embeddings: List[int]) -> None:
-        self.embeddings=embeddings
 
     def set_similarity_score(self, score: float) -> None:
         self.similarity_score=score
