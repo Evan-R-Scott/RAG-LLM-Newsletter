@@ -8,7 +8,7 @@
 
 ## What It Does
 
-On container startup, articles from 15+ tech newsletters via their RSS feeds (anywhere from 500-2000 articles) are pulled and stored. When you query the chatbot at localhost:8000, it will find articles similar to what you asked about (if available) and provide summaries on those articles. The goal for this is just to let me learn about anything new in tech that I'm interested in (research papers/startups/inventions/etc) quicker and avoid scrolling through a ton of articles I find uninteresting. :D
+On container startup, articles from 15+ tech newsletters via their RSS feeds (anywhere from 500-2000 articles) are pulled and stored. When you query the chatbot at localhost:8000, it will find articles similar to what you asked about via RAG (if available) and provide summaries on those articles. The goal for this is just to let me learn about anything new in tech that I'm interested in (research papers/startups/inventions/etc) quicker and avoid scrolling through a ton of articles I find uninteresting. :D
 
 ## Newsletter RSS Feeds Used:
 
