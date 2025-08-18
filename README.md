@@ -14,20 +14,20 @@ On container startup, articles from 15+ tech newsletters via their RSS feeds (an
 
 ### General Tech & CS News
 
-- MIT Technology Review (emerging tech across CS domains)
-- The Verge (consumer tech)
-- Ars Technica (deep technical coverage)
-- Wired (tech culture, security, policy)
+- MIT Technology Review
+- The Verge
+- Ars Technica
+- Wired
 
 ### Startup and Business Tech
 
-- VentureBeat (enterprise tech, startup analysis)
-- Tech Crunch (startup news, funding, products)
+- VentureBeat
+- Tech Crunch
 
 ### AI/ML Focused
 
-- AI News (AI industry developments)
-- Import AI (AI policy & research summarization)
+- AI News
+- Import AI
 
 ### Company Research Blogs
 
@@ -37,7 +37,7 @@ On container startup, articles from 15+ tech newsletters via their RSS feeds (an
 
 ### Academic Research
 
-- Distill (visual AI research explanations)
-- arXiv AI Papers (AI research)
-- arXiv Machine Learning Papers (ML research)
-- arXiv Computer Science Papers (all CS fields)
+- Distill
+- arXiv AI Papers
+- arXiv Machine Learning Papers
+- arXiv Computer Science Papers
