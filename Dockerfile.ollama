@@ -1,0 +1,11 @@
+FROM ollama/ollama:latest
+
+COPY Modelfile /Modelfile
+COPY start-ollama.sh /start-ollama.sh
+
+EXPOSE 11434
+
+RUN chmod +x /start-ollama.sh
+
+ENTRYPOINT []
+CMD ["/start-ollama.sh"]
