@@ -1,6 +1,7 @@
 import os
+import asyncio
+import time
 from settings import Config, Logger
-from utils.document_parser import chunk_articles
 from document_fetch.newsletter_data_fetch import parse_feeds
 
 READY_FILE = '/app/data_store/vector_store_ready'
@@ -11,22 +12,20 @@ def run() -> None:
     """
     Entrypoint to retrieval for the pipeline
     """
-    logger.info("Starting data fetch process")
-    all_articles = parse_feeds()
-    logger.info(f"Parsed {len(all_articles) if all_articles else 0} newsletters total")
-    
-    logger.info("Creating vector store")
-    vector_store = chunk_articles(all_articles)
-    
-    os.makedirs('/app/data_store', exist_ok=True)
-    
-    vector_store.save()
-    logger.info("Saved vector store")
-    
-    # Creates readiness flag which signals to 'web' service/container to startup
-    with open(READY_FILE, 'w') as f:
-        f.write('ready')
-    logger.info(f"Readiness flag created at {READY_FILE}")
+    try:
+        logger.info("Starting data fetch process")
+        vector_store = asyncio.run(parse_feeds())
+        
+        os.makedirs('/app/data_store', exist_ok=True)
+        vector_store.save()
+        
+        # Creates readiness flag which signals to 'web' service/container to startup
+        with open(READY_FILE, 'w') as f:
+            f.write('ready')
+        logger.info(f"Readiness flag created at {READY_FILE}")
+    except Exception as e:
+        logger.info(f"Data fetch process failed: {str(e)}")
+        raise
     
 if __name__ == "__main__":
     run()
