@@ -1,12 +1,13 @@
 from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
-import time
+from typing import Optional, Dict, List
+import json
 
+from utils.ollama_client import generate_response_stream
 from settings import Config, Logger, VectorStore
-from utils.llm import generate_llm_response
 from utils.embedding_handler import prepare_embeddings
 from utils.data_io import format_chunks
 
@@ -20,6 +21,10 @@ runtime_logger.info("Loaded data into vector store")
 class Message(BaseModel):
     message: str
 
+class ChatRequest(BaseModel):
+    message: str
+    articles_list: Optional[List[Dict]] = None
+
 templates = Jinja2Templates(directory="templates")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
@@ -28,32 +33,44 @@ def chatbot(request: Request):
     runtime_logger.info("Routing user to chat.html")
     return templates.TemplateResponse("chat.html", {"request": request})
 
-@app.post("/chat", response_class=JSONResponse)
-def chat_endpoint(query: Message):
+@app.post("/related_articles", response_class=JSONResponse)
+def related_articles_endpoint(query: Message):
     message = query.message
-    runtime_logger.info(f"Query submitted at /chat endpoint: {message}")
     query_embedding = prepare_embeddings(message)
-
-    # chunk objecs of highest similarity to query (up to top_k articles)
-    start_time = time.perf_counter()
     related_articles = vector_store.retrieve_top_k(query_embedding=query_embedding)
-    end_time = time.perf_counter()
-
-    exec_time = end_time - start_time
-    runtime_logger.info(f"Top_k retrieval took {exec_time:.4f} seconds")
-
+    runtime_logger.info(f"Found {len(related_articles)} articles of relative similarity to user's query: {query}")
     if len(related_articles) == 0:
-        runtime_logger.info(f"There were no articles with content relevant to the user's query: {query}")
-        articles_list = generate_llm_response(message, [])
+        articles_list = []
         json_formatted = ["No newsletter data was found related to your query."]
     else:
-        runtime_logger.info(f"Found {len(related_articles)} articles of relative similarity to user's query: {query}")
         articles_list, json_formatted = format_chunks(related_articles)
-        articles_list = generate_llm_response(message, articles_list)
-        if not articles_list:
-            articles_list = "Sorry, I encountered an error while processing your request. Please try again. Restart may be necessary."
-            json_formatted = ["No newsletter data was found related to your query."]
+
     return {
-        "summary": articles_list,
-        "related_text": json_formatted
+        "articles_list": articles_list,  # to feed into LLM
+        "related_text": json_formatted    # to display in sidebar
     }
+
+@app.post("/chat")
+async def chat_endpoint(body: ChatRequest):
+    message = body.message
+    articles_list = body.articles_list or []
+    runtime_logger.info(f"Beginning stream of: {message}")
+
+    async def event_stream():
+        chunk_count = 0
+        total_sent = ""
+        try:
+            async for chunk in generate_response_stream(message, articles_list):
+                chunk_count += 1
+                total_sent += chunk
+                yield chunk
+            runtime_logger.info(f"Total chunks sent: {chunk_count}, Total characters: {len(total_sent)}")
+        except Exception as e:
+            runtime_logger.error(f"Streaming error: {str(e)}")
+            yield f"data: {json.dumps({'error': str(e)})}\n\n"
+
+    return StreamingResponse(event_stream(), media_type="text/plain",
+                             headers={
+                                 "Cache-Control": "no-cache",
+                                 "Connection": "keep-alive",
+                                 })
