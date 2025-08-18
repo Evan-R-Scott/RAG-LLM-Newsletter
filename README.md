@@ -2,7 +2,7 @@
 
 1. Install Docker/Docker Compose
 2. Clone this repo
-3. Run: `docker-compose pull` for latest images
+3. Optionally run: `docker-compose pull` for latest images but not necessary
 4. Run: `docker-compose up` to start app
 5. Go to localhost:8000 on browser once container startup is complete
 
