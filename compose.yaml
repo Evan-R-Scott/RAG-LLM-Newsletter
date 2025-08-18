@@ -1,5 +1,24 @@
 services:
+  ollama:
+    image: evanrscott/rag-ollama:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+      - ollama_data:/ollama/data
+    restart: "no"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
   embedding_runner:
+    image: evanrscott/rag-chatbot:latest
     build: .
     command: >
       sh -c "
@@ -9,18 +28,32 @@ services:
     volumes:
       - vector_data:/app/data_store
       - logs_data:/app/logs
+      - huggingface_cache:/app/.cache/huggingface
+    environment:
+      - HF_HOME=/app/.cache/huggingface
     restart: "no"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    depends_on:
+      - ollama
 
   web:
+    image: evanrscott/rag-chatbot:latest
     build: .
     command: >
       sh -c "
-        echo 'Waiting for vector store readiness flag...'
-        echo 'Loading newsletter data into vector store. This may take a few minutes...'
-        while [ ! -f /app/data_store/vector_store_ready ]; do
-          sleep 5
-        done
-        echo 'Vector store ready, starting web app...'
+        echo 'Waiting for ollama model and vector store readiness...'
+
+      while [ ! -f /ollama/data/model_ready ] || [ ! -f /app/data_store/vector_store_ready ]; do
+        sleep 5
+      done
+
+        echo 'Ollama and Vector store ready, starting web app...'
         uvicorn cli:app --host 0.0.0.0 --port 8000 --reload
       "
     ports:
@@ -28,10 +61,17 @@ services:
     volumes:
       - vector_data:/app/data_store
       - logs_data:/app/logs
+      - huggingface_cache:/app/.cache/huggingface
+      - ollama_data:/ollama/data
+    environment:
+      - HF_HOME=/app/.cache/huggingface
     depends_on:
       - embedding_runner
+      - ollama
     restart: unless-stopped
 
 volumes:
   vector_data:
   logs_data:
+  huggingface_cache:
+  ollama_data:

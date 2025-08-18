@@ -1,4 +1,4 @@
-from torch import no_grad
+import torch
 import numpy as np
 from typing import List
 from settings import Config, Logger
@@ -6,53 +6,69 @@ from settings import Config, Logger
 config = Config.get_instance()
 daily_logger = Logger.get_daily_logger("data_fetch")
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+has_gpu = torch.cuda.is_available()
 
-def prepare_embeddings(input: str) -> np.ndarray:
+def prepare_embeddings(text: str) -> np.ndarray:
     """
-    Entrypoint for the embedding computation
-
-    Args:
-        input: query to be embedded
-    
-    Returns:
-        normalized embedding of the provided input
+    Compute normalized embeddings for a single text on CPU.
     """
-    embeddings = np.array(compute_embeddings(input))
-    embeddings = normalize_vector(embeddings)
-    return embeddings
-
-def compute_embeddings(query: str) -> List[float]:
-    """
-    Converts a given query into its embedding equivalent using BAAI/bge-small-en-v1.5
-
-    Args:
-        query: text to be tokenized into its vector representation
-    
-    Returns:
-        embedding of the query
-    """
-    if not query or not query.strip():
-        raise ValueError("Query cannot be empty")
-    
-    # converts text input into tokens
-    query_inputs = config.tokenizer(
-        query,
+    inputs = config.tokenizer(
+        text,
         padding=True,
         truncation=True,
-        return_tensors="pt")
-    
-    # creates vector embeddings of the tokens
-    with no_grad():
-        query_embeddings = config.embedding_model(**query_inputs).last_hidden_state.mean(dim=1).squeeze()
-        query_embeddings = query_embeddings.tolist()
+        max_length=512,
+        return_tensors="pt"
+    )
 
-    return query_embeddings
+    if has_gpu:
+        inputs = {k: v.to(device) for k, v in inputs.items()}
+        model = config.embedding_model.to(device)
+    else:
+        model = config.embedding_model
 
-def normalize_vector(vector: np.array) -> np.ndarray:
+    with torch.no_grad():
+        outputs = model(**inputs)
+        embeddings = outputs.last_hidden_state.mean(dim=1).squeeze()
+        embeddings = torch.nn.functional.normalize(embeddings.unsqueeze(0), p=2, dim=1).squeeze()
+        embeddings = embeddings.cpu().numpy()
+
+    return embeddings
+
+def prepare_embeddings_gpu(texts: List[str]) -> List[np.ndarray]:
     """
-    Normalization portion of cosine similarity to avoid repetitive computations during runtime
+    Compute embeddings for a list of texts.
+    Uses GPU if available, otherwise falls back to CPU sequential processing.
     """
-    norm = np.linalg.norm(vector)
-    if norm == 0:
-        return vector
-    return vector / norm
+    if not texts:
+        return []
+
+    if has_gpu:
+        model = config.embedding_model.to(device)
+        tokenizer = config.tokenizer
+        all_embeddings = []
+
+        for i in range(0, len(texts), config.batch_size):
+            batch_texts = texts[i:i+config.batch_size]
+
+            inputs = tokenizer(
+                batch_texts,
+                padding=True,
+                truncation=True,
+                max_length=512,
+                return_tensors="pt"
+            )
+
+            inputs = {k: v.to(device) for k, v in inputs.items()}
+
+            with torch.no_grad():
+                outputs = model(**inputs)
+                embeddings = outputs.last_hidden_state.mean(dim=1)
+                embeddings = torch.nn.functional.normalize(embeddings, p=2, dim=1)
+                all_embeddings.extend(embeddings.cpu().numpy())
+
+        return all_embeddings
+
+    else:
+        daily_logger.info("GPU not available, using CPU sequential processing")
+        return [prepare_embeddings(text) for text in texts]
