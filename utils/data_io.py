@@ -36,16 +36,17 @@ def format_chunks(
                 "Newsletter_From": chunk.newsletter,
                 "Content": chunk.text
             })
+            score = float(chunk.similarity_score)
             if chunk.newsletter in json_formatted:
                 json_formatted[chunk.newsletter].append({
                     "article_title": chunk.title,
                     "url": chunk.url,
-                    "similarity_score": chunk.similarity_score
+                    "similarity_score": score
                 })
             else:
                 json_formatted[chunk.newsletter] = [{
                     "article_title": chunk.title,
                     "url": chunk.url,
-                    "similarity_score": chunk.similarity_score
+                    "similarity_score": score
                 }]
     return articles_text, json_formatted

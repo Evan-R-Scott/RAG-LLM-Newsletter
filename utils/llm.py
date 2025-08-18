@@ -1,11 +1,12 @@
+"""   OLD CODE FROM USING OPENAPI FOR SUMMARIZATIONS   """
+
 from openai import OpenAI
 from typing import Optional
 from settings import Config, Logger
 
 config = Config.get_instance()
 runtime_logger = Logger.get_runtime_logger("chatbot")
-
-client = OpenAI(api_key=config.llm["API_KEY"])
+client = OpenAI(api_key=config.llm["API_KEY"]) # Old version -> Update config.json
 
 def generate_llm_response(query, text_related: list) -> Optional[str]:
     """
@@ -18,6 +19,9 @@ def generate_llm_response(query, text_related: list) -> Optional[str]:
     Returns:
         LM generated response based on context
     """
+
+    ### OLD CODE FROM USING OPENAPI FOR SUMMARIZATIONS ###
+
     if text_related:
         articles = [
             f"[Article Title:]{article['Title']}\n[Newsletter where article is from:]{article['Newsletter_From']}\n[Article Content:]{article['Content']}"
@@ -32,7 +36,7 @@ def generate_llm_response(query, text_related: list) -> Optional[str]:
     try:
         # call to OpenAPI
         response = client.chat.completions.create(
-            model=config.llm["MODEL"],
+            model=config.llm["MODEL"],  # Old version -> Update config.json
             messages=[
                 {
                     "role": "system",
