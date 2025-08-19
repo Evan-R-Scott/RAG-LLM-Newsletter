@@ -41,3 +41,9 @@ On container startup, articles from 15+ tech newsletters via their RSS feeds (an
 - arXiv AI Papers
 - arXiv Machine Learning Papers
 - arXiv Computer Science Papers
+
+## Things I want to add
+
+- Short-term memory for deeper dives into specific articles
+- Fine-tuning the local model with previous articles for better summarization
+- Approximate Nearest Neighbor [ANN] since newsletters tend to have genre specialties
