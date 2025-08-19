@@ -1,5 +1,7 @@
 #FROM python:3.12-slim
-FROM pytorch/pytorch:2.8.0-cuda12.9-cudnn9-runtime
+FROM nvidia/cuda:12.2.2-runtime-ubuntu22.04
+
+RUN apt-get update && apt-get install -y python3 python3-pip && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
