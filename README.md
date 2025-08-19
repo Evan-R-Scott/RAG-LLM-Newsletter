@@ -3,7 +3,7 @@ This app only works with a NVIDIA GPU + Docker with NVIDIA runtime, CPU was far 
 ## Quick Start
 
 1. Clone this repo
-2. Run: `docker-compose up` to start app [Optionally run: `docker-compose pull` first for latest images if ran before]
+2. Run: `docker compose up` to start app [Optionally run: `docker compose pull` first for latest images if ran before]
    - The first time this is run will take a while since the images must get pulled before startup
 3. Go to [localhost:8000](http://localhost:8000) on browser once container startup is complete
 
