@@ -11,7 +11,7 @@ has_gpu = torch.cuda.is_available()
 
 def prepare_embeddings(text: str) -> np.ndarray:
     """
-    Compute normalized embeddings for a single text on CPU.
+    Compute embeddings for a single text.
     """
     inputs = config.tokenizer(
         text,
@@ -37,8 +37,7 @@ def prepare_embeddings(text: str) -> np.ndarray:
 
 def prepare_embeddings_gpu(texts: List[str]) -> List[np.ndarray]:
     """
-    Compute embeddings for a list of texts.
-    Uses GPU if available, otherwise falls back to CPU sequential processing.
+    Compute embeddings for a list of texts via GPU
     """
     if not texts:
         return []
