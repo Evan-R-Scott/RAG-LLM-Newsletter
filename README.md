@@ -4,7 +4,8 @@
 2. Clone this repo
 3. Optionally run: `docker-compose pull` for latest images but not necessary
 4. Run: `docker-compose up` to start app
-5. Go to localhost:8000 on browser once container startup is complete
+     - The first time this is run will take a while since the images must get pulled before startup
+6. Go to localhost:8000 on browser once container startup is complete
 
 ## What It Does
 
