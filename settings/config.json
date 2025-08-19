@@ -1,5 +1,4 @@
 {
-    "document_directory": "documents",
     "rss_feeds_store": "document_fetch/newsletter_urls.json",
     "vector_store": "/app/data_store/vector_db.pkl",
     "tokenizer": "BAAI/bge-small-en-v1.5",
