@@ -10,13 +10,7 @@ services:
       - ollama_data:/root/.ollama
       - ollama_data:/ollama/data
     restart: "no"
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
+
   embedding_runner:
     image: evanrscott/rag-chatbot:latest
     build: .
@@ -32,13 +26,6 @@ services:
     environment:
       - HF_HOME=/app/.cache/huggingface
     restart: "no"
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
     depends_on:
       - ollama
 
@@ -49,9 +36,9 @@ services:
       sh -c "
         echo 'Waiting for ollama model and vector store readiness...'
 
-      while [ ! -f /ollama/data/model_ready ] || [ ! -f /app/data_store/vector_store_ready ]; do
-        sleep 5
-      done
+        while [ ! -f /ollama/data/model_ready ] || [ ! -f /app/data_store/vector_store_ready ]; do
+          sleep 5
+        done
 
         echo 'Ollama and Vector store ready, starting web app...'
         uvicorn cli:app --host 0.0.0.0 --port 8000 --reload
