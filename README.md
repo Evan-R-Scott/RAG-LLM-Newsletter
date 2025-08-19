@@ -5,7 +5,7 @@
 3. Optionally run: `docker-compose pull` for latest images but not necessary
 4. Run: `docker-compose up` to start app
      - The first time this is run will take a while since the images must get pulled before startup
-6. Go to localhost:8000 on browser once container startup is complete
+6. Go to [localhost:8000](http://localhost:8000) on browser once container startup is complete
 
 ## What It Does
 
